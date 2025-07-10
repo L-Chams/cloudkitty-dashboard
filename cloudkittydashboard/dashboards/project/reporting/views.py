@@ -19,8 +19,20 @@ import decimal
 import time
 
 from horizon import tabs
+from horizon import exceptions
+from horizon import messages
+
+from cloudkittydashboard import forms
+
+from django.conf import settings
+from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
 from cloudkittydashboard.api import cloudkitty as api
+
+
+#changes (added in)
+#from cloudkittydashboard.dashboards.project.reporting import base
 
 
 def _do_this_month(data):
@@ -76,13 +88,61 @@ class CostRepartitionTab(tabs.Tab):
     def get_context_data(self, request, **kwargs):
         today = datetime.datetime.today()
         day_start, day_end = calendar.monthrange(today.year, today.month)
-        begin = "%4d-%02d-01T00:00:00" % (today.year, today.month)
-        end = "%4d-%02d-%02dT23:59:59" % (today.year, today.month, day_end)
+      
+        form = self.get_form() #this is what my code was missing - I never defined it
+        
+    
+        if form.is_valid(): #set values to be from datepicker
+            start = form.cleaned_data['start']
+            end = form.cleaned_data['end']
+            begin = "%4d-%02d-%02dT00:00:00" % (start.year, start.month, start.day)
+            # begin = "%4d-%02d-%02dT%02d:%02d:%02d" % (start.year, start.month, start.day,
+            #                                           start.hour, start.minute, start.second) WANT TO APPEND TIMESTAMP ONTO BEGIN INSTEAD, so need to get time in start
+            
+            end = "%4d-%02d-%02dT23:59:59" % (end.year, end.month, end.day)
+        else: #set default date values if datepicker isn't working
+            messages.error(self.request,
+                               _("Invalid date format: "
+                                 "Using this month as default."))
+            begin = "%4d-%02d-%02dT00:00:00" % (today.year, today.month, day_start)
+            end = "%4d-%02d-%02dT23:59:59" % (today.year, today.month, day_end)
+
         client = api.cloudkittyclient(request)
         data = client.storage.get_dataframes(
             begin=begin, end=end, tenant_id=request.user.tenant_id)
         parsed_data = _do_this_month(data)
-        return {'repartition_data': parsed_data}
+        return {'repartition_data': parsed_data,
+                'form': form}
+    
+
+    def init_form(self):
+        print("ENTERS INIT FORM")
+        self.start = self.first_day
+        self.end = self.today.date()
+
+        return self.start, self.end
+
+    def get_form(self):
+        if not hasattr(self, 'form'):
+            req = self.request
+            start = req.GET.get('start', req.session.get('usage_start'))
+            end = req.GET.get('end', req.session.get('usage_end'))
+            if start and end:
+                # bound form
+                self.form = forms.DateForm({'start': start, 'end': end})
+            
+            else:
+                # non-bound form
+                init = self.init_form()
+                start = init[0].isoformat()
+                end = init[1].isoformat()
+                self.form = forms.DateForm(initial={'start': start,
+                                                    'end': end})
+            req.session['usage_start'] = start
+            req.session['usage_end'] = end
+        return self.form
+
+
 
 
 class ReportingTabs(tabs.TabGroup):

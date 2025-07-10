@@ -15,9 +15,14 @@
     <h4>{% trans "Cost Per Service Per Hour" %}</h4>
     <div id="cost_progress" style="max-width:100%;"></div>
     <div id="cost_progress_legend"></div>
+    <div id="datepicker_range">
+    {% with start=form.start end=form.end datepicker_id='date_form' %}
+    {% include 'project/reporting/_datepicker_reporting_form.html' %}
+    {% endwith %}
   </div>
-</div>
+  </div>
 
+ 
 <script type="text/javascript">
   var data = [
 {% for service, data in repartition_data.items %}
