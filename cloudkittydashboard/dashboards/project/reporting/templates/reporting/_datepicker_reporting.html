@@ -8,7 +8,15 @@
         <span class="fa fa-calendar"></span>
       </span>
   </div>
-{% endblock %} 
+   <script>
+      $(function () {
+        $('.datepicker input').datepicker({
+          todayBtn: "linked", //Enables the today button which quickly links back to today
+          endDate: '0d', // Prevents the user from picking a date in the future
+        });
+      });
+    </script>
+{% endblock %}
 
 
 

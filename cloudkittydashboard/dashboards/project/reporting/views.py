@@ -92,18 +92,27 @@ class CostRepartitionTab(tabs.Tab):
         form = self.get_form() #this is what my code was missing - I never defined it
         
     
-        if form.is_valid(): #set values to be from datepicker
+        if form.is_valid():
+            #set values to be from datepicker
             start = form.cleaned_data['start']
             end = form.cleaned_data['end']
-            begin = "%4d-%02d-%02dT00:00:00" % (start.year, start.month, start.day)
-            # begin = "%4d-%02d-%02dT%02d:%02d:%02d" % (start.year, start.month, start.day,
-            #                                           start.hour, start.minute, start.second) WANT TO APPEND TIMESTAMP ONTO BEGIN INSTEAD, so need to get time in start
-            
+            begin = "%4d-%02d-%02dT00:00:00" % (start.year, start.month, start.day)             
             end = "%4d-%02d-%02dT23:59:59" % (end.year, end.month, end.day)
+
+            #verification to check that the end date is after the start date
+            if end <  begin :
+                messages.error(self.request,
+                                _("Invalid time period. The end date should be "
+                                "more recent than the start date. Setting the end as today."))    
+                      
+                end = "%4d-%02d-%02dT23:59:59" % (today.year, today.month, day_end)
+
+    
         else: #set default date values if datepicker isn't working
             messages.error(self.request,
                                _("Invalid date format: "
-                                 "Using this month as default."))
+                                "Using this month as default."))
+            
             begin = "%4d-%02d-%02dT00:00:00" % (today.year, today.month, day_start)
             end = "%4d-%02d-%02dT23:59:59" % (today.year, today.month, day_end)
 
