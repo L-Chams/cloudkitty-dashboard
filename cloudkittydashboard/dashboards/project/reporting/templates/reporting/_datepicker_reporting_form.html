@@ -19,3 +19,58 @@
   </div>
   <button class="btn btn-primary" type="submit">{% trans "Submit" %}</button>
 </form>
+
+<button class="btn btn-primary" id="lastWeek">{% trans "Last week" %} </button>
+<button class="btn btn-primary" id="lastMonth">{% trans "Last Month" %} </button>
+<button class="btn btn-primary" id="thisYear">{% trans "This Year" %} </button>
+
+<script> 
+  $(function () {
+    //use to reference form inputs
+    const $form = $('#{{ datepicker_id }}');  
+    const $startInput = $('[name="{{ form.start.name }}"]');
+    const $endInput = $('[name="{{ form.end.name }}"]');
+
+  
+    //sets range to be the last week
+    $('#lastWeek').on('click', function () {
+      const endDate = new Date(); // current date
+      const startDate = new Date();
+      startDate.setDate(endDate.getDate() - 6); // last 7 days including today
+      
+      $startInput.val(startDate.toISOString().split('T')[0]);
+      $endInput.val(endDate.toISOString().split('T')[0]);
+
+      $form.submit(); //updates the form with new dates
+      
+    });
+
+    //sets range to be the last month
+    $('#lastMonth').on('click', function () { 
+      const endDate = new Date(); // current date
+      endDate.setDate(0); // last day of the previous month
+      const startDate = new Date();
+      startDate.setMonth(endDate.getMonth()); // first day of the previous month
+      startDate.setDate(1); // first day of the month
+    
+      $startInput.val(startDate.toISOString().split('T')[0]);
+      $endInput.val(endDate.toISOString().split('T')[0]);
+      
+      $form.submit(); //updates the form with new dates
+    });
+
+    //sets range to be the current year
+    $('#thisYear').on('click', function () {
+      const endDate = new Date(); // current date
+      const startDate =  new Date(new Date().getFullYear(), 0, 1, 1); // start of the current year
+      
+      $startInput.val(startDate.toISOString().split('T')[0]);
+      $endInput.val(endDate.toISOString().split('T')[0]);
+      
+      $form.submit(); //updates the form with new dates
+
+    });
+  });
+
+
+</script>
