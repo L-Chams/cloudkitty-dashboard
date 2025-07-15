@@ -19,58 +19,126 @@
   </div>
   <button class="btn btn-primary" type="submit">{% trans "Submit" %}</button>
 </form>
+<button class ="btn btn-primary" id="leftArrow">  <<< </button>
+<button class="btn btn-primary" id="Week">{% trans "Week View" %} </button>
+<button class="btn btn-primary" id="Month">{% trans "Month View" %} </button>
+<button class="btn btn-primary" id="Year">{% trans "Year View" %} </button>
+<button class ="btn btn-primary" id="rightArrow">  >>> </button>
 
-<button class="btn btn-primary" id="lastWeek">{% trans "Last week" %} </button>
-<button class="btn btn-primary" id="lastMonth">{% trans "Last Month" %} </button>
-<button class="btn btn-primary" id="thisYear">{% trans "This Year" %} </button>
 
 <script> 
+ //initialise lastclicked so it can be used in future.
+  
+
   $(function () {
     //use to reference form inputs
     const $form = $('#{{ datepicker_id }}');  
     const $startInput = $('[name="{{ form.start.name }}"]');
     const $endInput = $('[name="{{ form.end.name }}"]');
+    const currDate = new Date(); // current date
+    // Get lastClicked from sessionStorage, default to 'week' if not set
+    var lastClicked = sessionStorage.getItem('datepicker_lastClicked') || 'week';
+   
+    //move time period back
+    $('#leftArrow').on('click', function () {
 
-  
-    //sets range to be the last week
-    $('#lastWeek').on('click', function () {
-      const endDate = new Date(); // current date
+      if ($startInput.val() && $endInput.val()) {
+        const startDate = new Date($startInput.val());
+        const endDate = new Date($endInput.val());
+
+        if (lastClicked === 'week') {
+          startDate.setDate(startDate.getDate() - 7);
+          endDate.setDate(endDate.getDate() - 7);
+        }
+        
+        else if (lastClicked === 'month') {
+          startDate.setMonth(startDate.getMonth() -1);
+          endDate.setMonth(endDate.getMonth(), 0);
+        } 
+        
+        else if (lastClicked === 'year') {
+          startDate.setFullYear(startDate.getFullYear() - 1);
+          endDate.setFullYear(endDate.getFullYear() - 1);
+        }
+
+        $startInput.val(startDate.toISOString().split('T')[0]);
+        $endInput.val(endDate.toISOString().split('T')[0]);
+      }
+      
+      $form.submit(); //updates the form with new dates
+    });
+
+    //move time period forward
+    $('#rightArrow').on('click', function () {
+      if ($startInput.val() && $endInput.val()) {
+        const startDate = new Date($startInput.val());
+        const endDate = new Date($endInput.val());
+
+        if (lastClicked === 'week') {
+          startDate.setDate(startDate.getDate() + 7);
+          endDate.setDate(endDate.getDate() + 7);
+        } else if (lastClicked === 'month') {
+          startDate.setMonth(startDate.getMonth() + 1);
+          endDate.setMonth(endDate.getMonth() +2, 0); // Set to last day of next month
+        } else if (lastClicked === 'year') {
+          startDate.setFullYear(startDate.getFullYear() + 1);
+          endDate.setFullYear(endDate.getFullYear() + 1);
+        }
+        
+        $startInput.val(startDate.toISOString().split('T')[0]);
+        $endInput.val(endDate.toISOString().split('T')[0]);
+      }
+      
+      $form.submit();
+    });
+
+    //sets range to be the current week
+    $('#Week').on('click', function () {
       const startDate = new Date();
-      startDate.setDate(endDate.getDate() - 6); // last 7 days including today
+      startDate.setDate(currDate.getDate() - (currDate.getDay()) + 1); // first day of the week (set to monday with +1)
+      const endDate= new Date();
+      endDate.setDate(startDate.getDate()+6); // end of the current week (saturday)
       
       $startInput.val(startDate.toISOString().split('T')[0]);
       $endInput.val(endDate.toISOString().split('T')[0]);
 
-      $form.submit(); //updates the form with new dates
+      lastClicked = 'week'; 
+      sessionStorage.setItem('datepicker_lastClicked', lastClicked); 
+      $form.submit(); 
       
     });
 
-    //sets range to be the last month
-    $('#lastMonth').on('click', function () { 
-      const endDate = new Date(); // current date
-      endDate.setDate(0); // last day of the previous month
+    //sets range to be this month by default
+    $('#Month').on('click', function () { 
       const startDate = new Date();
-      startDate.setMonth(endDate.getMonth()); // first day of the previous month
-      startDate.setDate(1); // first day of the month
-    
+      startDate.setFullYear(currDate.getFullYear(), currDate.getMonth(), 1); // first day of the month
+      
+      const endDate = new Date();
+      endDate.setFullYear(currDate.getFullYear(), currDate.getMonth() + 1, 0); // last day of the month
+
       $startInput.val(startDate.toISOString().split('T')[0]);
       $endInput.val(endDate.toISOString().split('T')[0]);
       
-      $form.submit(); //updates the form with new dates
+      lastClicked = 'month'; 
+      sessionStorage.setItem('datepicker_lastClicked', lastClicked); 
+      $form.submit();
     });
 
     //sets range to be the current year
-    $('#thisYear').on('click', function () {
-      const endDate = new Date(); // current date
-      const startDate =  new Date(new Date().getFullYear(), 0, 1, 1); // start of the current year
+    $('#Year').on('click', function () {
+      
+      const startDate =  new Date(currDate.getFullYear(), 0, 1); // start of the current year
+      const endDate = new Date(currDate.getFullYear(), 11, 31); //end of the current year
       
       $startInput.val(startDate.toISOString().split('T')[0]);
       $endInput.val(endDate.toISOString().split('T')[0]);
       
-      $form.submit(); //updates the form with new dates
+      lastClicked = 'year'; 
+      sessionStorage.setItem('datepicker_lastClicked', lastClicked); 
+      $form.submit();
 
     });
   });
-
+ 
 
 </script>
