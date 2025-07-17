@@ -19,16 +19,71 @@
   </div>
   <button class="btn btn-primary" type="submit">{% trans "Submit" %}</button>
 </form>
-<button class ="btn btn-primary" id="leftArrow">  <<< </button>
-<button class="btn btn-primary" id="Week">{% trans "Week View" %} </button>
-<button class="btn btn-primary" id="Month">{% trans "Month View" %} </button>
-<button class="btn btn-primary" id="Year">{% trans "Year View" %} </button>
-<button class ="btn btn-primary" id="rightArrow">  >>> </button>
+
+<div class="button-row">
+  <button class="btn btn-primary" id="leftArrow">  &laquo; </button>
+  <button class="btn btn-primary" id="Week">{% trans "Week View" %} </button>
+  <button class="btn btn-primary" id="Month">{% trans "Month View" %} </button>
+  <button class="btn btn-primary" id="Year">{% trans "Year View" %} </button>
+  <button class="btn btn-primary" id="rightArrow">  &raquo; </button>
+</div>
+<div class="additional-range-buttons">
+  <button class="btn btn-primary" id="lastWeek">{% trans "Last Week" %} </button>
+  <button class="btn btn-primary" id="lastMonth">{% trans "Last Month" %} </button>
+  <button class="btn btn-primary" id="lastYear">{% trans "Last Year" %} </button>
+</div>
+
+<style>
+.form-inline {
+  text-align: center;
+  margin-bottom: 20px;
+  margin-left: -4px;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.form-inline h4 {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.form-inline .datepicker,
+.form-inline .datepicker-delimiter,
+.form-inline .btn {
+  display: inline-block;
+  vertical-align: middle;
+  margin: 0 5px;
+}
+
+.button-row {
+  text-align: center;
+  margin: 10px 0;
+  margin-left: -4px;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.button-row button {
+  margin: 0 5px;
+}
+
+.additional-range-buttons {
+  text-align: center;
+  margin: 15px 0 0;
+  margin-left: -4px;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.additional-range-buttons button {
+  margin: 0 5px;
+}
+</style>
+
+
 
 
 <script> 
- //initialise lastclicked so it can be used in future.
-  
 
   $(function () {
     //use to reference form inputs
@@ -137,6 +192,51 @@
       sessionStorage.setItem('datepicker_lastClicked', lastClicked); 
       $form.submit();
 
+    });
+
+    //sets range to be the last week
+    $('#lastWeek').on('click', function () {
+      const endDate = new Date(); // current date
+      const startDate = new Date();
+      startDate.setDate((startDate.getDate() - (startDate.getDay() + 6) % 7) -7); //logic to get last monday
+      endDate.setDate(startDate.getDate()+6); // last day of the previous week (sunday)
+      $startInput.val(startDate.toISOString().split('T')[0]);
+      $endInput.val(endDate.toISOString().split('T')[0]);
+
+      lastClicked = 'week'; 
+      sessionStorage.setItem('datepicker_lastClicked', lastClicked); 
+      $form.submit(); 
+      
+    });
+
+    //sets range to be the last month
+    $('#lastMonth').on('click', function () { 
+      const endDate = new Date(); // current date
+      endDate.setDate(0); // last day of the previous month
+      const startDate = new Date();
+      startDate.setMonth(endDate.getMonth()); // first day of the previous month
+      startDate.setDate(1); // first day of the month
+    
+      $startInput.val(startDate.toISOString().split('T')[0]);
+      $endInput.val(endDate.toISOString().split('T')[0]);
+      
+      lastClicked = 'month';
+      sessionStorage.setItem('datepicker_lastClicked', lastClicked);
+      $form.submit(); 
+    });
+
+    $('#lastYear').on('click', function () {
+      const endDate = new Date(); // current date
+      endDate.setFullYear(endDate.getFullYear() - 1, 11, 31); // last day of the previous year
+      const startDate = new Date();
+      startDate.setFullYear(endDate.getFullYear(), 0, 1); // first day of the previous year
+      
+      $startInput.val(startDate.toISOString().split('T')[0]);
+      $endInput.val(endDate.toISOString().split('T')[0]);
+      
+      lastClicked = 'year'; 
+      sessionStorage.setItem('datepicker_lastClicked', lastClicked); 
+      $form.submit(); 
     });
   });
  
