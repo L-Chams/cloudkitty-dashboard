@@ -78,6 +78,11 @@
 .additional-range-buttons button {
   margin: 0 5px;
 }
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
 </style>
 
 
@@ -91,12 +96,19 @@
     const $startInput = $('[name="{{ form.start.name }}"]');
     const $endInput = $('[name="{{ form.end.name }}"]');
     const currDate = new Date(); // current date
+
     // Get lastClicked from sessionStorage, default to 'week' if not set
     var lastClicked = sessionStorage.getItem('datepicker_lastClicked') || 'week';
+    
+    // Prevents user from clicking buttons while the form is submitting
+    function disableAllButtons() {
+      $('#leftArrow, #rightArrow, #Week, #Month, #Year, #lastWeek, #lastMonth, #lastYear').prop('disabled', true);
+    }
    
     //move time period back
     $('#leftArrow').on('click', function () {
-
+      disableAllButtons();
+      
       if ($startInput.val() && $endInput.val()) {
         const startDate = new Date($startInput.val());
         const endDate = new Date($endInput.val());
@@ -125,6 +137,8 @@
 
     //move time period forward
     $('#rightArrow').on('click', function () {
+      disableAllButtons();
+      
       if ($startInput.val() && $endInput.val()) {
         const startDate = new Date($startInput.val());
         const endDate = new Date($endInput.val());
@@ -149,6 +163,8 @@
 
     //sets range to be the current week
     $('#Week').on('click', function () {
+      disableAllButtons();
+      
       const startDate = new Date();
       startDate.setDate(currDate.getDate() - (currDate.getDay()) + 1); // first day of the week (set to monday with +1)
       const endDate= new Date();
@@ -165,6 +181,8 @@
 
     //sets range to be this month by default
     $('#Month').on('click', function () { 
+      disableAllButtons();
+      
       const startDate = new Date();
       startDate.setFullYear(currDate.getFullYear(), currDate.getMonth(), 1); // first day of the month
       
@@ -181,6 +199,7 @@
 
     //sets range to be the current year
     $('#Year').on('click', function () {
+      disableAllButtons();
       
       const startDate =  new Date(currDate.getFullYear(), 0, 1); // start of the current year
       const endDate = new Date(currDate.getFullYear(), 11, 31); //end of the current year
@@ -196,10 +215,14 @@
 
     //sets range to be the last week
     $('#lastWeek').on('click', function () {
+      disableAllButtons();
+      
       const endDate = new Date(); // current date
       const startDate = new Date();
+      
       startDate.setDate((startDate.getDate() - (startDate.getDay() + 6) % 7) -7); //logic to get last monday
       endDate.setDate(startDate.getDate()+6); // last day of the previous week (sunday)
+      
       $startInput.val(startDate.toISOString().split('T')[0]);
       $endInput.val(endDate.toISOString().split('T')[0]);
 
@@ -211,8 +234,11 @@
 
     //sets range to be the last month
     $('#lastMonth').on('click', function () { 
+      disableAllButtons();
+      
       const endDate = new Date(); // current date
       endDate.setDate(0); // last day of the previous month
+      
       const startDate = new Date();
       startDate.setMonth(endDate.getMonth()); // first day of the previous month
       startDate.setDate(1); // first day of the month
@@ -226,8 +252,11 @@
     });
 
     $('#lastYear').on('click', function () {
+      disableAllButtons();
+      
       const endDate = new Date(); // current date
       endDate.setFullYear(endDate.getFullYear() - 1, 11, 31); // last day of the previous year
+      
       const startDate = new Date();
       startDate.setFullYear(endDate.getFullYear(), 0, 1); // first day of the previous year
       
