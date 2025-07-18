@@ -31,9 +31,6 @@ from django.utils.translation import gettext_lazy as _
 from cloudkittydashboard.api import cloudkitty as api
 
 
-#changes (added in)
-#from cloudkittydashboard.dashboards.project.reporting import base
-
 
 def _do_this_month(data):
     services = {}
@@ -89,17 +86,16 @@ class CostRepartitionTab(tabs.Tab):
         today = datetime.datetime.today()
         day_start, day_end = calendar.monthrange(today.year, today.month)
       
-        form = self.get_form() #this is what my code was missing - I never defined it
+        form = self.get_form()
         
     
         if form.is_valid():
-            #set values to be from datepicker
+            #set values to be from datepicker form
             start = form.cleaned_data['start']
             end = form.cleaned_data['end']
             begin = "%4d-%02d-%02dT00:00:00" % (start.year, start.month, start.day)             
             end = "%4d-%02d-%02dT23:59:59" % (end.year, end.month, end.day)
 
-            #verification to check that the end date is after the start date
             if end <  begin :
                 messages.error(self.request,
                                 _("Invalid time period. The end date should be "
@@ -107,14 +103,23 @@ class CostRepartitionTab(tabs.Tab):
                       
                 end = "%4d-%02d-%02dT23:59:59" % (today.year, today.month, day_end)
 
-    
-        else: #set default date values if datepicker isn't working
+            elif start > today.date():
+                messages.error(self.request,
+                               _("Invalid time period. You are requesting "
+                                 "data from the future which may not exist."))
+           
+        elif form.is_bound: #when the form is invalid
             messages.error(self.request,
                                _("Invalid date format: "
                                 "Using this month as default."))
             
             begin = "%4d-%02d-%02dT00:00:00" % (today.year, today.month, day_start)
             end = "%4d-%02d-%02dT23:59:59" % (today.year, today.month, day_end)
+        
+                          
+        else: #set default date values (before form is filled in)
+            begin = "%4d-%02d-%02dT00:00:00" % (today.year, today.month, day_start)
+            end = "%4d-%02d-%02dT23:59:59" % (today.year, today.month, day_end)         
 
         client = api.cloudkittyclient(request)
         data = client.storage.get_dataframes(
@@ -122,7 +127,6 @@ class CostRepartitionTab(tabs.Tab):
         parsed_data = _do_this_month(data)
         return {'repartition_data': parsed_data,
                 'form': form}
-    
 
     @property
     def today(self):
