@@ -21,8 +21,7 @@ import time
 from horizon import tabs
 from horizon import exceptions
 from horizon import messages
-
-from cloudkittydashboard import forms
+from horizon import forms
 
 from django.conf import settings
 from django.utils import timezone
