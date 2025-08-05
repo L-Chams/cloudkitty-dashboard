@@ -19,6 +19,8 @@ from django.utils.translation import gettext_lazy as _
 from horizon import exceptions
 from horizon import tables
 
+from cloudkittydashboard import forms
+
 from cloudkittydashboard.api import cloudkitty as api
 from cloudkittydashboard.dashboards.project.rating \
     import tables as rating_tables
@@ -35,15 +37,17 @@ class IndexView(tables.DataTableView):
     template_name = 'project/rating/index.html'
 
     def get_data(self):
+        form = forms.CheckBoxForm(self.request.GET)
+        groupby = form.get_selected_fields()
+        
         summary = api.cloudkittyclient(
             self.request, version='2').summary.get_summary(
                 tenant_id=self.request.user.tenant_id,
-                groupby=['type'], response_format='object')
+                groupby=groupby, response_format='object')
 
-        data = summary.get('results')
+        data = summary.get('results')  
         total = sum([r.get('rate') for r in data])
-
-        data.append({'type': 'TOTAL', 'rate': total})
+        data.append({'type': 'TOTAL', 'rate': total})       
         for item in data:
             item['rate'] = utils.formatRate(item['rate'],
                                             rate_prefix, rate_postfix)
