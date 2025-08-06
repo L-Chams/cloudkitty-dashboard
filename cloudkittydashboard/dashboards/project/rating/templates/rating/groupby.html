@@ -35,7 +35,7 @@
         label.htmlFor = 'checkbox-' + name;
         label.className = "group-label";
         label.appendChild(checkbox);
-        label.appendChild(document.createTextNode(convertString(name)));
+        label.appendChild(document.createTextNode(' ' + convertString(name)));
 
         // Add to DOM
         checkboxes.appendChild(label);
@@ -114,7 +114,7 @@
 
   .group-label {
     display: inline-block;
-    margin-right: 15px;
+    margin-right: 8px;
     margin-bottom: 5px;
     font-weight: normal;
   }
