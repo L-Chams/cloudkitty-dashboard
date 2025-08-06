@@ -1,32 +1,69 @@
 {% load i18n %}
-<div class="grouping-options">
-    <h4>Group by:</h4>
+<form method="GET" action="?" id="groupby_checkbox" class="form-inline">
+    <h4>{% trans "Group by:" %}</h4>
     <!--checkbox filtering-->
-    <form method="GET" action="?" id="groupby_checkbox" class="form-inline">
-        <section>
-            <label for="id" class="group-label">
-                <input type="checkbox" name="id" value="true" id="checkbox-id"> ID
-            </label>
-            <label for="user_id" class="group-label">
-                <input type="checkbox" name="user_id" value="true" id="checkbox-user_id"> User ID
-            </label>
-            <label for="project_id" class="group-label">
-                <input type="checkbox" name="project_id" value="true" id="checkbox-project_id"> Project ID
-            </label>
-            <button class="btn btn-primary" id="toggleAll" type="button" onclick="toggleAllCheckboxes()">
-                {% trans "Select All" %}
-            </button>
-        </section>
-        <button class="btn btn-primary" type="submit">{% trans "Submit" %}</button>
-    </form>
-</div>
+    <div id="checkboxes"></div>
+    <button class="btn btn-primary" id="toggleAll" type="button" onclick="toggleAllCheckboxes()">
+        {% trans "Select All" %}
+    </button>
+    <button class="btn btn-primary" type="submit">{% trans "Submit" %}</button>
+</form>
 
 <script>
-    const checkboxes = ['id', 'user_id', 'project_id'];
+    const groupby = ['id', 'user_id', 'project_id'];
+    const checkboxes = document.getElementById('checkboxes');
+    const urlParams = new URLSearchParams(window.location.search);
+
+    // Function to convert field names to readable format
+    function convertString(word) {
+        return word.replace(/_/g, ' ')
+            .replace(/\b\w/g, l => l.toUpperCase())
+            .replace(/\bId\b/g, 'ID');
+    }
+
+    groupby.forEach(function (name) {
+        // Create checkbox
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.name = name;
+        checkbox.id = 'checkbox-' + name;
+        checkbox.value = "true";
+        checkbox.className = "group-checkbox";
+
+        // Create label
+        const label = document.createElement("label");
+        label.htmlFor = 'checkbox-' + name;
+        label.className = "group-label";
+        label.appendChild(checkbox);
+        label.appendChild(document.createTextNode(convertString(name)));
+
+        // Add to DOM
+        checkboxes.appendChild(label);
+
+        // Restore state: URL params take priority, then session storage
+        if (urlParams.has(name)) {
+            checkbox.checked = urlParams.get(name) === 'true';
+            sessionStorage.setItem('checkbox-' + name, checkbox.checked);
+        } else {
+            const savedState = sessionStorage.getItem('checkbox-' + name);
+            if (savedState !== null) {
+                checkbox.checked = savedState === 'true';
+            }
+        }
+
+        // Save state on change
+        checkbox.addEventListener('change', function () {
+            sessionStorage.setItem(this.id, this.checked);
+            updateButtonText();
+        });
+    });
+
+    // Set initial button text
+    updateButtonText();
 
     // Function to update the button text based on checkbox states
     function updateButtonText() {
-        const allCheckboxes = document.querySelectorAll('.group-label input[type=checkbox]');
+        const allCheckboxes = document.querySelectorAll('.group-checkbox');
         const allChecked = Array.from(allCheckboxes).every(cb => cb.checked);
         const button = document.getElementById('toggleAll');
         button.textContent = allChecked ? "{% trans 'Unselect All' %}" : "{% trans 'Select All' %}";
@@ -34,7 +71,7 @@
 
     // Function to toggle all checkboxes and update session storage
     function toggleAllCheckboxes() {
-        const allCheckboxes = document.querySelectorAll('.group-label input[type=checkbox]');
+        const allCheckboxes = document.querySelectorAll('.group-checkbox');
         const allChecked = Array.from(allCheckboxes).every(cb => cb.checked);
 
         allCheckboxes.forEach(cb => {
@@ -43,34 +80,51 @@
         });
 
         updateButtonText();
-
-        // Submit the form
         document.getElementById('groupby_checkbox').submit();
     }
-
-    document.addEventListener('DOMContentLoaded', function () {
-        const urlParams = new URLSearchParams(window.location.search);
-
-        checkboxes.forEach(function (name) {
-            const checkbox = document.getElementById('checkbox-' + name);
-            if (!checkbox) return;
-
-            // Restore state: URL params take priority, then session storage
-            if (urlParams.has(name)) {
-                checkbox.checked = urlParams.get(name) === 'true';
-            } else {
-                const saved = sessionStorage.getItem('checkbox-' + name);
-                if (saved) checkbox.checked = saved === 'true';
-            }
-
-            // Save state on change
-            checkbox.addEventListener('change', function () {
-                sessionStorage.setItem('checkbox-' + name, checkbox.checked);
-                updateButtonText();
-            });
-        });
-
-        // Set initial button text
-        updateButtonText();
-    });
 </script>
+
+<style>
+  /* Align form and controls with the left edge of the graph */
+  .form-inline {
+    text-align: left;
+    margin-left: 0;
+    padding-left: 0;
+    margin: 0;
+    padding: 0;
+  }
+
+  .form-inline h4 {
+    text-align: left;
+    margin-left: 0;
+    padding-left: 0;
+    margin-top: 0;
+    margin-bottom: 10px;
+  }
+
+  .form-inline #checkboxes {
+    margin-bottom: 10px;
+  }
+
+  .form-inline .btn {
+    margin-left: 0;
+    margin-right: 10px;
+    margin-bottom: 10px;
+  }
+
+  .group-label {
+    display: inline-block;
+    margin-right: 15px;
+    margin-bottom: 5px;
+    font-weight: normal;
+  }
+
+  .group-checkbox {
+    margin-right: 5px;
+  }
+
+  button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+</style>

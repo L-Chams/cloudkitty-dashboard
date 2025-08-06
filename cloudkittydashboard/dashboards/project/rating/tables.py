@@ -19,22 +19,31 @@ from horizon import tables
 class SummaryTable(tables.DataTable):
     """This table formats a summary for the given tenant."""
 
+    def convert_string(word):
+        """Convert a string to a more readable format.
+        Capitalises the first letter of each word,
+        replaces underscores with spaces, and formats 'Id' to 'ID'."""
+        return word.replace('_', ' ').title().replace(' Id', ' ID').replace('Id', 'ID')
+
+    groupby_list = ['id', 'user_id', 'project_id']
+
     res_type = tables.Column('type', verbose_name=_('Metric Type'))
-    res_id = tables.Column('id', verbose_name=_('ID'))
-    user_id = tables.Column('user_id', verbose_name=_('User ID'))
-    project_id = tables.Column('project_id', verbose_name=_('Project ID'))
+
+    # Dynamically create columns based on groupby_list
+    for field in groupby_list:
+        locals()[field] = tables.Column(field, verbose_name=_(convert_string(field)))
+
     rate = tables.Column('rate', verbose_name=_('Rate'))
 
     def __init__(self, request, data=None, needs_form_wrapper=None, **kwargs):
         super().__init__(request, data, needs_form_wrapper, **kwargs)
         
         # Hide columns based on checkbox selection
-        if request.GET.get('id') != 'true':
-            self.columns['res_id'].classes = ['hidden']
-        if request.GET.get('user_id') != 'true':
-            self.columns['user_id'].classes = ['hidden']
-        if request.GET.get('project_id') != 'true':
-            self.columns['project_id'].classes = ['hidden']
+        for field in self.groupby_list:
+            if request.GET.get(field) != 'true':
+                self.columns[field].classes = ['hidden']
+
+  
 
     class Meta(object):
         name = "summary"
@@ -43,10 +52,15 @@ class SummaryTable(tables.DataTable):
     def get_object_id(self, datum):
         # prevents the table from displaying the same ID for different rows
         id_parts = []
-        for field in ['type', 'id', 'user_id', 'project_id']:
+        for field in ['type'] + self.groupby_list:
             if field in datum and datum[field]:
                 id_parts.append(str(datum[field]))
         
         if id_parts:
             return '_'.join(id_parts)
         return 'unknown'
+    
+    
+
+
+
