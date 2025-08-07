@@ -25,9 +25,7 @@ class SummaryTable(tables.DataTable):
         replaces underscores with spaces, and formats 'Id' to 'ID'."""
         return word.replace('_', ' ').title().replace(' Id', ' ID').replace('Id', 'ID')
 
-    groupby_list = ['id', 'user_id', 'project_id']
-
-    res_type = tables.Column('type', verbose_name=_('Metric Type'))
+    groupby_list = ['type', 'id', 'user_id', 'project_id']
 
     # Dynamically create columns based on groupby_list
     for field in groupby_list:
@@ -52,7 +50,7 @@ class SummaryTable(tables.DataTable):
     def get_object_id(self, datum):
         # prevents the table from displaying the same ID for different rows
         id_parts = []
-        for field in ['type'] + self.groupby_list:
+        for field in self.groupby_list:
             if field in datum and datum[field]:
                 id_parts.append(str(datum[field]))
         

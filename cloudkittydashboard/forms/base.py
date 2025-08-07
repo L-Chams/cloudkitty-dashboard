@@ -53,6 +53,7 @@ class SelfHandlingForm(SelfHandlingMixin, forms.Form):
 
 class DateForm(forms.Form):
     """A simple form for selecting a range of time."""
+
     start = forms.DateField(input_formats=("%Y-%m-%d",))
     end = forms.DateField(input_formats=("%Y-%m-%d",))
 
@@ -63,20 +64,21 @@ class DateForm(forms.Form):
 
 
 class CheckBoxForm(forms.Form):
-    id = forms.BooleanField(required=False)
-    user_id = forms.BooleanField(required=False)
-    project_id = forms.BooleanField(required=False)
+    """A form for selecting fields to group by in the rating summary."""
+
+    checkbox_fields = ["type", "id", "user_id", "project_id"]
+
+    for field in checkbox_fields:
+        locals()[field] = forms.BooleanField(required=False)
 
     def get_selected_fields(self):
         """Return list of selected groupby fields."""
         if not self.is_valid():
-            return ['type']
-        
-        # Get all selected checkbox fields
-        checkbox_fields = ['id', 'user_id', 'project_id']
-        selected = [field for field in checkbox_fields 
-                   if self.cleaned_data.get(field)]
-        
-        # Always include 'type', add any selected fields 
-        return ['type'] + selected if selected else ['type']
+            return []
 
+        # Get all selected checkbox fields
+        selected = [field for field in self.checkbox_fields if 
+                    self.cleaned_data.get(field)]
+
+        # Return the selected fields, empty list if none selected
+        return selected

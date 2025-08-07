@@ -1,87 +1,110 @@
 {% load i18n %}
 <form method="GET" action="?" id="groupby_checkbox" class="form-inline">
-    <h4>{% trans "Group by:" %}</h4>
-    <!--checkbox filtering-->
-    <div id="checkboxes"></div>
-    <button class="btn btn-primary" id="toggleAll" type="button" onclick="toggleAllCheckboxes()">
-        {% trans "Select All" %}
-    </button>
-    <button class="btn btn-primary" type="submit">{% trans "Submit" %}</button>
+  <h4>{% trans "Group by:" %}</h4>
+  <!--checkbox filtering-->
+  <div id="checkboxes"></div>
+  <button class="btn btn-primary" id="toggleAll" type="button" onclick="toggleAllCheckboxes()">
+    {% trans "Select All" %}
+  </button>
+  <button class="btn btn-primary" type="submit">{% trans "Submit" %}</button>
 </form>
 
 <script>
-    const groupby = ['id', 'user_id', 'project_id'];
-    const checkboxes = document.getElementById('checkboxes');
-    const urlParams = new URLSearchParams(window.location.search);
+  const groupby = ['type', 'id', 'user_id', 'project_id'];
+  const checkboxes = document.getElementById('checkboxes');
+  const urlParams = new URLSearchParams(window.location.search);
 
-    // Function to convert field names to readable format
-    function convertString(word) {
-        return word.replace(/_/g, ' ')
-            .replace(/\b\w/g, l => l.toUpperCase())
-            .replace(/\bId\b/g, 'ID');
+  // Function to convert field names to readable format
+  function convertString(word) {
+    return word.replace(/_/g, ' ')
+      .replace(/\b\w/g, l => l.toUpperCase())
+      .replace(/\bId\b/g, 'ID');
+  }
+
+  let shouldAutoSubmit = false;
+
+  //dynamically create checkboxes based on groupby fields
+  groupby.forEach(function (name) {
+
+    // Create checkbox
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.name = name;
+    checkbox.id = 'checkbox-' + name;
+    checkbox.value = "true";
+    checkbox.className = "group-checkbox";
+
+    // Create label
+    const label = document.createElement("label");
+    label.htmlFor = 'checkbox-' + name;
+    label.className = "group-label";
+    label.appendChild(checkbox);
+    label.appendChild(document.createTextNode(' ' + convertString(name)));
+
+    // Add to DOM
+    checkboxes.appendChild(label);
+
+    //checkbox state management
+    if (urlParams.has(name)) {
+      checkbox.checked = (urlParams.get(name) === 'true');
+    } else if (urlParams.toString()) {
+      checkbox.checked = false;
+    } else {
+      // No URL params - restore from sessionStorage or use defaults
+      const savedState = sessionStorage.getItem('checkbox-' + name);
+
+      if (savedState !== null) {
+        // Use previously saved state
+        checkbox.checked = (savedState === 'true');
+      } else {
+        // Default: only 'type' checkbox is checked initially
+        checkbox.checked = (name === 'type');
+      }
+
+      // Mark for auto-submit if any checkbox will be checked
+      if (checkbox.checked) {
+        shouldAutoSubmit = true;
+      }
     }
 
-    groupby.forEach(function (name) {
-        // Create checkbox
-        const checkbox = document.createElement("input");
-        checkbox.type = "checkbox";
-        checkbox.name = name;
-        checkbox.id = 'checkbox-' + name;
-        checkbox.value = "true";
-        checkbox.className = "group-checkbox";
+    // Save current state and add change listener
+    sessionStorage.setItem('checkbox-' + name, checkbox.checked);
+    checkbox.addEventListener('change', function () {
+      sessionStorage.setItem(this.id, this.checked);
+      updateButtonText();
+    });
+  });
 
-        // Create label
-        const label = document.createElement("label");
-        label.htmlFor = 'checkbox-' + name;
-        label.className = "group-label";
-        label.appendChild(checkbox);
-        label.appendChild(document.createTextNode(' ' + convertString(name)));
+  // Set initial button text
+  updateButtonText();
 
-        // Add to DOM
-        checkboxes.appendChild(label);
+  // Auto-submit logic: if no URL params exist but we can restore based off sessionStorage
+  if (shouldAutoSubmit) {
+    document.getElementById('groupby_checkbox').submit();
+  }
 
-        // Restore state: URL params take priority, then session storage
-        if (urlParams.has(name)) {
-            checkbox.checked = urlParams.get(name) === 'true';
-            sessionStorage.setItem('checkbox-' + name, checkbox.checked);
-        } else {
-            const savedState = sessionStorage.getItem('checkbox-' + name);
-            if (savedState !== null) {
-                checkbox.checked = savedState === 'true';
-            }
-        }
+  // Function to update the button text based on checkbox states
+  function updateButtonText() {
+    const allCheckboxes = document.querySelectorAll('.group-checkbox');
+    const allChecked = Array.from(allCheckboxes).every(cb => cb.checked);
+    const button = document.getElementById('toggleAll');
+    button.textContent = allChecked ? "{% trans 'Unselect All' %}" :
+     "{% trans 'Select All' %}";
+  }
 
-        // Save state on change
-        checkbox.addEventListener('change', function () {
-            sessionStorage.setItem(this.id, this.checked);
-            updateButtonText();
-        });
+  // Function to toggle all checkboxes and update session storage
+  function toggleAllCheckboxes() {
+    const allCheckboxes = document.querySelectorAll('.group-checkbox');
+    const allChecked = Array.from(allCheckboxes).every(cb => cb.checked);
+
+    allCheckboxes.forEach(cb => {
+      cb.checked = !allChecked;
+      sessionStorage.setItem(cb.id, cb.checked);
     });
 
-    // Set initial button text
     updateButtonText();
-
-    // Function to update the button text based on checkbox states
-    function updateButtonText() {
-        const allCheckboxes = document.querySelectorAll('.group-checkbox');
-        const allChecked = Array.from(allCheckboxes).every(cb => cb.checked);
-        const button = document.getElementById('toggleAll');
-        button.textContent = allChecked ? "{% trans 'Unselect All' %}" : "{% trans 'Select All' %}";
-    }
-
-    // Function to toggle all checkboxes and update session storage
-    function toggleAllCheckboxes() {
-        const allCheckboxes = document.querySelectorAll('.group-checkbox');
-        const allChecked = Array.from(allCheckboxes).every(cb => cb.checked);
-
-        allCheckboxes.forEach(cb => {
-            cb.checked = !allChecked;
-            sessionStorage.setItem(cb.id, cb.checked);
-        });
-
-        updateButtonText();
-        document.getElementById('groupby_checkbox').submit();
-    }
+    document.getElementById('groupby_checkbox').submit();
+  }
 </script>
 
 <style>
