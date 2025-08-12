@@ -25,7 +25,7 @@ class SummaryTable(tables.DataTable):
         replaces underscores with spaces, and formats 'Id' to 'ID'."""
         return word.replace('_', ' ').title().replace(' Id', ' ID').replace('Id', 'ID')
 
-    groupby_list = ['type', 'id', 'user_id', 'project_id']
+    groupby_list = ['type', 'id', 'user_id']
 
     # Dynamically create columns based on groupby_list
     for field in groupby_list:

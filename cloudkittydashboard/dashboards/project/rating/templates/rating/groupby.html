@@ -1,138 +1,140 @@
 {% load i18n %}
-<form method="GET" action="?" id="groupby_checkbox" class="form-inline">
+<form method="GET" action="?" id="groupby_checkbox" class="groupby-form">
   <h4>{% trans "Group by:" %}</h4>
-  <!--checkbox filtering-->
   <div id="checkboxes"></div>
-  <button class="btn btn-primary" id="toggleAll" type="button" onclick="toggleAllCheckboxes()">
+  <button class="btn btn-primary" id="toggleAll" type="button">
     {% trans "Select All" %}
   </button>
   <button class="btn btn-primary" type="submit">{% trans "Submit" %}</button>
 </form>
 
 <script>
-  const groupby = ['type', 'id', 'user_id', 'project_id'];
-  const checkboxes = document.getElementById('checkboxes');
-  const urlParams = new URLSearchParams(window.location.search);
+  class GroupByManager {
+    constructor() {
+      this.groupby = ['type', 'id', 'user_id'];
+      this.checkboxContainer = document.getElementById('checkboxes');
+      this.urlParams = new URLSearchParams(window.location.search);
+      this.form = document.getElementById('groupby_checkbox');
+      this.toggleButton = document.getElementById('toggleAll');
 
-  // Function to convert field names to readable format
-  function convertString(word) {
-    return word.replace(/_/g, ' ')
-      .replace(/\b\w/g, l => l.toUpperCase())
-      .replace(/\bId\b/g, 'ID');
-  }
+      this.init();
+    }
 
-  let shouldAutoSubmit = false;
+    // Convert field names to readable format
+    formatLabel(word) {
+      return word.replace(/_/g, ' ')
+        .replace(/\b\w/g, l => l.toUpperCase())
+        .replace(/\bId\b/g, 'ID');
+    }
 
-  //dynamically create checkboxes based on groupby fields
-  groupby.forEach(function (name) {
+    // Create checkbox with label
+    createCheckbox(name) {
+      const label = document.createElement('label');
+      label.className = 'group-label';
+      label.innerHTML = `
+        <input type="checkbox" name="${name}" id="checkbox-${name}" 
+               value="true" class="group-checkbox">
+        ${this.formatLabel(name)}
+      `;
+      return label;
+    }
 
-    // Create checkbox
-    const checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
-    checkbox.name = name;
-    checkbox.id = 'checkbox-' + name;
-    checkbox.value = "true";
-    checkbox.className = "group-checkbox";
-
-    // Create label
-    const label = document.createElement("label");
-    label.htmlFor = 'checkbox-' + name;
-    label.className = "group-label";
-    label.appendChild(checkbox);
-    label.appendChild(document.createTextNode(' ' + convertString(name)));
-
-    // Add to DOM
-    checkboxes.appendChild(label);
-
-    //checkbox state management
-    if (urlParams.has(name)) {
-      checkbox.checked = (urlParams.get(name) === 'true');
-    } else if (urlParams.toString()) {
-      checkbox.checked = false;
-    } else {
-      // No URL params - restore from sessionStorage or use defaults
-      const savedState = sessionStorage.getItem('checkbox-' + name);
-
-      if (savedState !== null) {
-        // Use previously saved state
-        checkbox.checked = (savedState === 'true');
-      } else {
-        // Default: only 'type' checkbox is checked initially
-        checkbox.checked = (name === 'type');
+    // Determine checkbox state from URL params or session storage
+    getCheckboxState(name) {
+      if (this.urlParams.has(name)) {
+        return this.urlParams.get(name) === 'true';
       }
 
-      // Mark for auto-submit if any checkbox will be checked
-      if (checkbox.checked) {
-        shouldAutoSubmit = true;
+      if (this.urlParams.toString()) {
+        return false; // URL has params but not this one
+      }
+
+      // Use session storage or default
+      const saved = sessionStorage.getItem(`checkbox-${name}`);
+      //if we have a saved state use it, otherwise default to type checked
+      return saved !== null ? saved === 'true' : name === 'type';
+    }
+
+    // Set up all checkboxes
+    setupCheckboxes() {
+      let shouldAutoSubmit = false;
+
+      this.groupby.forEach(name => {
+        const label = this.createCheckbox(name);
+        const checkbox = label.querySelector('input');
+
+        checkbox.checked = this.getCheckboxState(name);
+
+        if (checkbox.checked && !this.urlParams.toString()) {
+          shouldAutoSubmit = true;
+        }
+
+        // Save state and add listener
+        sessionStorage.setItem(`checkbox-${name}`, checkbox.checked);
+        checkbox.addEventListener('change', () => {
+          sessionStorage.setItem(`checkbox-${name}`, checkbox.checked);
+          this.updateToggleButton();
+        });
+
+        this.checkboxContainer.appendChild(label);
+      });
+
+      if (shouldAutoSubmit) {
+        this.form.submit();
       }
     }
 
-    // Save current state and add change listener
-    sessionStorage.setItem('checkbox-' + name, checkbox.checked);
-    checkbox.addEventListener('change', function () {
-      sessionStorage.setItem(this.id, this.checked);
-      updateButtonText();
-    });
-  });
+    // Update toggle button text based on current state
+    updateToggleButton() {
+      const checkboxes = this.checkboxContainer.querySelectorAll('.group-checkbox');
+      const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+      this.toggleButton.textContent = allChecked ?
+        "{% trans 'Unselect All' %}" : "{% trans 'Select All' %}";
+    }
 
-  // Set initial button text
-  updateButtonText();
+    // Toggle all checkboxes
+    toggleAll() {
+      const checkboxes = this.checkboxContainer.querySelectorAll('.group-checkbox');
+      const allChecked = Array.from(checkboxes).every(cb => cb.checked);
 
-  // Auto-submit logic: if no URL params exist but we can restore based off sessionStorage
-  if (shouldAutoSubmit) {
-    document.getElementById('groupby_checkbox').submit();
+      checkboxes.forEach(cb => {
+        cb.checked = !allChecked;
+        sessionStorage.setItem(`checkbox-${cb.name}`, cb.checked);
+      });
+
+      this.updateToggleButton();
+      this.form.submit();
+    }
+
+    // Initialize the component
+    init() {
+      this.setupCheckboxes();
+      this.updateToggleButton();
+      this.toggleButton.addEventListener('click', () => this.toggleAll());
+    }
   }
 
-  // Function to update the button text based on checkbox states
-  function updateButtonText() {
-    const allCheckboxes = document.querySelectorAll('.group-checkbox');
-    const allChecked = Array.from(allCheckboxes).every(cb => cb.checked);
-    const button = document.getElementById('toggleAll');
-    button.textContent = allChecked ? "{% trans 'Unselect All' %}" :
-     "{% trans 'Select All' %}";
-  }
-
-  // Function to toggle all checkboxes and update session storage
-  function toggleAllCheckboxes() {
-    const allCheckboxes = document.querySelectorAll('.group-checkbox');
-    const allChecked = Array.from(allCheckboxes).every(cb => cb.checked);
-
-    allCheckboxes.forEach(cb => {
-      cb.checked = !allChecked;
-      sessionStorage.setItem(cb.id, cb.checked);
-    });
-
-    updateButtonText();
-    document.getElementById('groupby_checkbox').submit();
-  }
+  // Initialize when DOM is ready
+  document.addEventListener('DOMContentLoaded', () => new GroupByManager());
 </script>
 
 <style>
-  /* Align form and controls with the left edge of the graph */
-  .form-inline {
+  .groupby-form {
     text-align: left;
-    margin-left: 0;
-    padding-left: 0;
     margin: 0;
     padding: 0;
   }
 
-  .form-inline h4 {
-    text-align: left;
-    margin-left: 0;
-    padding-left: 0;
-    margin-top: 0;
+  .groupby-form h4 {
+    margin: 0 0 10px 0;
+  }
+
+  .groupby-form #checkboxes {
     margin-bottom: 10px;
   }
 
-  .form-inline #checkboxes {
-    margin-bottom: 10px;
-  }
-
-  .form-inline .btn {
-    margin-left: 0;
-    margin-right: 10px;
-    margin-bottom: 10px;
+  .groupby-form .btn {
+    margin: 0 10px 10px 0;
   }
 
   .group-label {
@@ -144,10 +146,5 @@
 
   .group-checkbox {
     margin-right: 5px;
-  }
-
-  button:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
   }
 </style>
