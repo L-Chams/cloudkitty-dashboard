@@ -1,0 +1,290 @@
+{% load i18n %}
+
+<form action="?" method="get" id="{{ datepicker_id }}" class="form-inline">
+    <h4>{% trans "Select a period of time to view data in:" %}
+        <span class="small help-block">{% trans "The date should be in YYYY-MM-DD format." %}</span>
+    </h4>
+    <div class="datepicker form-group">
+        {% with datepicker_input=form.start datepicker_label="From" %}
+        {% include 'project/reporting/_datepicker_reporting.html' %}
+        {% endwith %}
+    </div>
+    <span class="datepicker-delimiter">
+        <span class="datepicker-delimiter-text">{% trans 'to' %}</span>
+    </span>
+    <div class="datepicker form-group">
+        {% with datepicker_input=form.end datepicker_label="To" %}
+        {% include 'project/reporting/_datepicker_reporting.html' %}
+        {% endwith %}
+    </div>
+    <button class="btn btn-primary" type="submit">{% trans "Submit" %}</button>
+</form>
+
+<div class="controls-container">
+    <div class="dropdown default-ranges">
+        <button class="dropbtn">{% trans "Period Range" %}</button>
+        <div class="dropdown-content">
+            <button data-period="day" data-view="current">{% trans "Day View" %}</button>
+            <button data-period="week" data-view="current">{% trans "Week View" %}</button>
+            <button data-period="month" data-view="current">{% trans "Month View" %}</button>
+            <button data-period="year" data-view="current">{% trans "Year View" %}</button>
+        </div>
+    </div>
+    <div class="dropdown preset-ranges">
+        <button class="dropbtn">{% trans "Preset Ranges" %}</button>
+        <div class="dropdown-content">
+            <button data-period="day" data-view="yesterday">{% trans "Yesterday" %}</button>
+            <button data-period="week" data-view="last">{% trans "Last Week" %}</button>
+            <button data-period="month" data-view="last">{% trans "Last Month" %}</button>
+            <button data-period="month" data-view="last" data-amount="3">{% trans "Last 3 Months" %}</button>
+            <button data-period="month" data-view="last" data-amount="6">{% trans "Last 6 Months" %}</button>
+            <button data-period="year" data-view="last">{% trans "Last Year" %}</button>
+        </div>
+    </div>
+    <button class="arrow-btn" data-direction="prev">&laquo;</button>
+    <button class="arrow-btn" data-direction="next">&raquo;</button>
+</div>
+
+<style>
+    .form-inline {
+        text-align: left;
+        margin: 0;
+        padding: 0;
+    }
+
+    .form-inline h4 {
+        text-align: left;
+        margin: 0 0 10px 0;
+    }
+
+    .form-inline .datepicker,
+    .form-inline .datepicker-delimiter,
+    .form-inline .btn {
+        margin: 0 10px 0 0;
+    }
+
+    .controls-container {
+        text-align: left;
+        margin: 10px 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .dropbtn,
+    .arrow-btn {
+        background-color: #EEEEEE;
+        color: #6E6E6E;
+        padding: 5px 10px;
+        font-size: 16px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    .dropdown {
+        position: relative;
+        display: inline-block;
+    }
+
+    .dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: #f1f1f1;
+        min-width: 160px;
+        box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+        z-index: 1;
+    }
+
+    .dropdown-content button {
+        color: black;
+        background-color: #f1f1f1;
+        border: none;
+        padding: 12px 16px;
+        display: block;
+        width: 100%;
+        text-align: left;
+        cursor: pointer;
+        margin: 0;
+        border-radius: 0;
+    }
+
+    .dropdown-content button:hover {
+        background-color: #ddd;
+    }
+
+    .dropdown:hover .dropdown-content {
+        display: block;
+    }
+</style>
+
+<script>
+    $(function () {
+        const $form = $('#{{ datepicker_id }}');
+        const $startInput = $('[name="{{ form.start.name }}"]');
+        const $endInput = $('[name="{{ form.end.name }}"]');
+
+        let lastClicked = sessionStorage.getItem('datepicker_lastClicked') || 'week';
+
+        // Utility functions
+        const formatDate = (date) => {
+            return date.getFullYear() + '-' +
+                String(date.getMonth() + 1).padStart(2, '0') + '-' +
+                String(date.getDate()).padStart(2, '0');
+        };
+
+        const disableButtons = () => {
+            $('.controls-container button').prop('disabled', true);
+        };
+
+        const submitForm = (startDate, endDate, periodType) => {
+            $startInput.val(formatDate(startDate));
+            $endInput.val(formatDate(endDate));
+            lastClicked = periodType;
+            sessionStorage.setItem('datepicker_lastClicked', lastClicked);
+            $form.submit();
+        };
+
+        // Date calculation functions
+        const dateCalculators = {
+            day: {
+                current: () => {
+                    const date = new Date();
+                    return { start: new Date(date), end: new Date(date) };
+                },
+                yesterday: () => {
+                    const date = new Date();
+                    date.setDate(date.getDate() - 1);
+                    return { start: new Date(date), end: new Date(date) };
+                }
+            },
+            week: {
+                current: () => {
+                    const start = new Date();
+                    start.setDate(start.getDate() - start.getDay() + 1);
+                    const end = new Date(start);
+                    end.setDate(start.getDate() + 6);
+                    return { start, end };
+                },
+                last: () => {
+                    const end = new Date();
+                    const start = new Date();
+                    start.setDate(start.getDate() - (start.getDay() + 6) % 7 - 7);
+                    end.setDate(start.getDate() + 6);
+                    return { start, end };
+                }
+            },
+            month: {
+                current: () => {
+                    const today = new Date();
+                    const start = new Date(today.getFullYear(), today.getMonth(), 1);
+                    const end = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+                    return { start, end };
+                },
+                last: (amount = 1) => {
+                    const end = new Date();
+                    end.setDate(0);
+                    const start = new Date();
+                    start.setMonth(end.getMonth() - (amount - 1), 1);
+                    return { start, end };
+                }
+            },
+            year: {
+                current: () => {
+                    const year = new Date().getFullYear();
+                    return {
+                        start: new Date(year, 0, 1),
+                        end: new Date(year, 11, 31)
+                    };
+                },
+                last: () => {
+                    const year = new Date().getFullYear() - 1;
+                    return {
+                        start: new Date(year, 0, 1),
+                        end: new Date(year, 11, 31)
+                    };
+                }
+            }
+        };
+
+        // Navigation functions
+        const navigate = (direction) => {
+            if (!$startInput.val() || !$endInput.val()) return;
+
+            const currentStart = new Date($startInput.val());
+            const currentEnd = new Date($endInput.val());
+            const multiplier = direction === 'next' ? 1 : -1;
+
+            const navigators = {
+                day: () => {
+                    currentStart.setDate(currentStart.getDate() + multiplier);
+                    currentEnd.setDate(currentEnd.getDate() + multiplier);
+                },
+                week: () => {
+                    currentStart.setDate(currentStart.getDate() + (7 * multiplier));
+                    currentEnd.setDate(currentEnd.getDate() + (7 * multiplier));
+                },
+                month: () => {
+                    if (direction === 'next') {
+                        currentStart.setMonth(currentStart.getMonth() + 1, 1);
+                        currentEnd.setMonth(currentEnd.getMonth() + 2, 0);
+                    } else {
+                        currentStart.setMonth(currentStart.getMonth() - 1, 1);
+                        currentEnd.setMonth(currentEnd.getMonth(), 0);
+                    }
+                },
+                last3Month: () => {
+                    if (direction === 'next') {
+                        currentStart.setMonth(currentStart.getMonth() + 3, 1);
+                        currentEnd.setMonth(currentEnd.getMonth() + 4, 0);
+                    } else {
+                        currentStart.setMonth(currentStart.getMonth() - 3, 1);
+                        currentEnd.setMonth(currentEnd.getMonth() - 2, 0);
+                    }
+                },
+                last6Month: () => {
+                    if (direction === 'next') {
+                        currentStart.setMonth(currentStart.getMonth() + 6, 1);
+                        currentEnd.setMonth(currentEnd.getMonth() + 7, 0);
+                    } else {
+                        currentStart.setMonth(currentStart.getMonth() - 6, 1);
+                        currentEnd.setMonth(currentEnd.getMonth() - 5, 0);
+                    }
+                },
+                year: () => {
+                    currentStart.setFullYear(currentStart.getFullYear() + multiplier);
+                    currentEnd.setFullYear(currentEnd.getFullYear() + multiplier);
+                }
+            };
+
+            if (navigators[lastClicked]) {
+                navigators[lastClicked]();
+                submitForm(currentStart, currentEnd, lastClicked);
+            }
+        };
+
+        // Event handlers
+        $('.dropdown-content button[data-period]').on('click', function () {
+            disableButtons();
+
+            const period = $(this).data('period');
+            const view = $(this).data('view');
+            const amount = $(this).data('amount') || 1;
+
+            const { start, end } = dateCalculators[period][view](amount);
+            const periodType = amount > 1 ? `last${amount}Month` : period;
+
+            submitForm(start, end, periodType);
+        });
+
+        $('.arrow-btn').on('click', function () {
+            disableButtons();
+            navigate($(this).data('direction'));
+        });
+    });
+</script>
