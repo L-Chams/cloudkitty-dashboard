@@ -18,7 +18,6 @@
 
 from django import forms
 from django.forms.forms import NON_FIELD_ERRORS
-from django.utils.translation import gettext_lazy as _
 
 
 class SelfHandlingMixin(object):
@@ -66,7 +65,7 @@ class DateForm(forms.Form):
 class CheckBoxForm(forms.Form):
     """A form for selecting fields to group by in the rating summary."""
 
-    checkbox_fields = ["type", "id", "user_id", "project_id"]
+    checkbox_fields = ["type", "id", "user_id"]
 
     for field in checkbox_fields:
         locals()[field] = forms.BooleanField(required=False)
@@ -77,8 +76,8 @@ class CheckBoxForm(forms.Form):
             return []
 
         # Get all selected checkbox fields
-        selected = [field for field in self.checkbox_fields if 
-                    self.cleaned_data.get(field)]
-
-        # Return the selected fields, empty list if none selected
+        selected = [
+            field for field in self.checkbox_fields
+            if self.cleaned_data.get(field)
+        ]
         return selected

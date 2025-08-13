@@ -119,6 +119,7 @@ class IPField(fields.Field):
 
 class MultiIPField(IPField):
     """Extends IPField to allow comma-separated lists of addresses."""
+
     def validate(self, value):
         self.addresses = []
         if value:
@@ -142,6 +143,7 @@ class MACAddressField(fields.Field):
     .. xx-xx-xx-xx-xx-xx
     .. xxxx.xxxx.xxxx
     """
+
     def validate(self, value):
         super().validate(value)
 
@@ -219,6 +221,7 @@ class SelectWidget(widgets.Widget):
                 ])
 
     """
+
     def __init__(self, attrs=None, choices=(), data_attrs=(), transform=None,
                  transform_html_attrs=None):
         self.choices = list(choices)
@@ -288,8 +291,8 @@ class SelectWidget(widgets.Widget):
         return ' '.join(other_html)
 
     def transform_option_label(self, option_label):
-        if (not isinstance(option_label, (str, Promise)) and
-                callable(self.transform)):
+        if (not isinstance(
+                option_label, (str, Promise)) and callable(self.transform)):
             option_label = self.transform(option_label)
         return html.conditional_escape(force_str(option_label))
 
@@ -301,6 +304,7 @@ class SelectWidget(widgets.Widget):
 
 class ThemableSelectWidget(SelectWidget):
     """Bootstrap base select field widget."""
+
     def render(self, name, value, attrs=None, renderer=None, choices=()):
         # NOTE(woodnt): Currently the "attrs" contents are being added to the
         #               select that's hidden.  It's unclear whether this is the
@@ -425,6 +429,7 @@ class ThemableCheckboxInput(widgets.CheckboxInput):
 
     It is used to allow a custom checkbox experience.
     """
+
     def render(self, name, value, attrs=None, renderer=None):
         label_for = attrs.get('id', '')
 
@@ -448,6 +453,7 @@ class SubWidget(object):
     Some widgets are made of multiple HTML elements -- namely, RadioSelect.
     This is a class that represents the "inner" HTML element of a widget.
     """
+
     def __init__(self, parent_widget, name, value, attrs, choices):
         self.parent_widget = parent_widget
         self.name, self.value = name, value
@@ -547,9 +553,11 @@ class ThemableCheckboxChoiceInput(ChoiceInput):
             label_for = ''
         attrs = dict(self.attrs, **attrs) if attrs else self.attrs
         return html.format_html(
-            '<div class="themable-checkbox">{}<label{}>' +
+            '<div class="themable-checkbox">{}<label{}>'
             '<span>{}</span></label></div>',
-            self.tag(attrs), label_for, self.choice_label
+            self.tag(attrs),
+            label_for,
+            self.choice_label,
         )
 
 
@@ -609,6 +617,7 @@ class ExternalFileField(fields.FileField):
     external location, while the form validation is done as usual. It should be
     paired with ExternalUploadMeta metaclass embedded into the Form class.
     """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.widget.attrs.update({'data-external-upload': 'true'})

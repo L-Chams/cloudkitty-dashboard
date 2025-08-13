@@ -15,82 +15,23 @@
 # Importing non-modules that are not used explicitly
 
 # FIXME(gabriel): Legacy imports for API compatibility.
-from django.core.exceptions import ValidationError
-from django.forms.fields import *  # noqa: F403,H303
-from django.forms.forms import *  # noqa: F403,H303
-from django.forms import widgets
-from django.forms.widgets import *  # noqa: F403,H303
+from django.forms.fields import BooleanField
+from django.forms.fields import DateField
+from django.forms.forms import Form
 
 
 # Convenience imports for public API components.
-from horizon.forms.base import DateForm
-from horizon.forms.base import SelfHandlingForm
-from horizon.forms.base import SelfHandlingMixin
 from cloudkittydashboard.forms.base import CheckBoxForm
-from horizon.forms.fields import DynamicChoiceField
-from horizon.forms.fields import DynamicTypedChoiceField
-from horizon.forms.fields import ExternalFileField
-from horizon.forms.fields import ExternalUploadMeta
-from horizon.forms.fields import IPField
-from horizon.forms.fields import IPv4
-from horizon.forms.fields import IPv6
-from horizon.forms.fields import MACAddressField
-from horizon.forms.fields import MultiIPField
-from horizon.forms.fields import SelectWidget
-from horizon.forms.fields import ThemableCheckboxInput
-from horizon.forms.fields import ThemableCheckboxSelectMultiple
-from horizon.forms.fields import ThemableChoiceField
-from horizon.forms.fields import ThemableDynamicChoiceField
-from horizon.forms.fields import ThemableDynamicTypedChoiceField
-from horizon.forms.fields import ThemableSelectWidget
-from horizon.forms.views import ModalFormMixin
-from horizon.forms.views import ModalFormView
+from cloudkittydashboard.forms.base import DateForm
 
 
 __all__ = [
-    "SelfHandlingMixin",
-    "SelfHandlingForm",
     "DateForm",
     "CheckBoxForm",
-    "ModalFormView",
-    "ModalFormMixin",
-    "DynamicTypedChoiceField",
-    "DynamicChoiceField",
-    "ExternalFileField",
-    "ExternalUploadMeta",
-    "ThemableCheckboxInput",
-    "ThemableCheckboxSelectMultiple",
-    "ThemableChoiceField",
-    "ThemableDynamicChoiceField",
-    "ThemableDynamicTypedChoiceField",
-    "ThemableSelectWidget",
-    "IPField",
-    "IPv4",
-    "IPv6",
-    "MACAddressField",
-    "MultiIPField",
-    "SelectWidget",
-
-    # From django.forms
-    "ValidationError",
 
     # From django.forms.fields
-    'Field', 'CharField', 'IntegerField', 'DateField', 'TimeField',
-    'DateTimeField', 'TimeField', 'RegexField', 'EmailField', 'FileField',
-    'ImageField', 'URLField', 'BooleanField', 'NullBooleanField',
-    'ChoiceField', 'MultipleChoiceField', 'ComboField', 'MultiValueField',
-    'FloatField', 'DecimalField', 'SplitDateTimeField',
-    'GenericIPAddressField', 'FilePathField', 'SlugField', 'TypedChoiceField',
-    'TypedMultipleChoiceField',
-
-    # From django.forms.widgets
-    "widgets",
-    'Media', 'MediaDefiningClass', 'Widget', 'TextInput', 'PasswordInput',
-    'HiddenInput', 'MultipleHiddenInput', 'ClearableFileInput', 'FileInput',
-    'DateInput', 'DateTimeInput', 'TimeInput', 'Textarea', 'CheckboxInput',
-    'Select', 'NullBooleanSelect', 'SelectMultiple', 'RadioSelect',
-    'CheckboxSelectMultiple', 'MultiWidget', 'SplitDateTimeWidget',
+    'DateField', 'BooleanField',
 
     # From django.forms.forms
-    'BaseForm', 'Form',
+    'Form',
 ]

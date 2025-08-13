@@ -42,15 +42,14 @@ class IndexView(tables.DataTableView):
         summary = api.cloudkittyclient(
             self.request, version='2').summary.get_summary(
                 tenant_id=self.request.user.tenant_id,
-                groupby=groupby, response_format='object') 
-          
+                groupby=groupby, response_format='object')
         data = summary.get("results")
         total = sum([r.get("rate") for r in data])
 
-        if not groupby: # No checkboxes are selected, display total rate only
+        if not groupby:  # No checkboxes are selected, display total rate only
             data = [{"type": "TOTAL", "rate": total}]
-            
-        else: # Some checkboxes are selected - use groupby
+
+        else:  # Some checkboxes are selected - use groupby
             data.append({'type': 'TOTAL', 'rate': total})
             for item in data:
                 item['rate'] = utils.formatRate(item['rate'],

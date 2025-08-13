@@ -1,475 +1,290 @@
 {% load i18n %}
 
 <form action="?" method="get" id="{{ datepicker_id }}" class="form-inline">
-  <h4>{% trans "Select a period of time to view data in:" %}
-    <span class="small help-block">{% trans "The date should be in YYYY-MM-DD format." %}</span>
-  </h4>
-  <div class="datepicker form-group">
-    {% with datepicker_input=form.start datepicker_label="From" %}
-    {% include 'project/reporting/_datepicker_reporting.html' %}
-    {% endwith %}
-  </div>
-  <span class="datepicker-delimiter">
-    <span class="datepicker-delimiter-text">{% trans 'to' %}</span>
-  </span>
-  <div class="datepicker form-group">
-    {% with datepicker_input=form.end datepicker_label="To" %}
-    {% include 'project/reporting/_datepicker_reporting.html' %}
-    {% endwith %}
-  </div>
-  <button class="btn btn-primary" type="submit">{% trans "Submit" %}</button>
+    <h4>{% trans "Select a period of time to view data in:" %}
+        <span class="small help-block">{% trans "The date should be in YYYY-MM-DD format." %}</span>
+    </h4>
+    <div class="datepicker form-group">
+        {% with datepicker_input=form.start datepicker_label="From" %}
+        {% include 'project/reporting/_datepicker_reporting.html' %}
+        {% endwith %}
+    </div>
+    <span class="datepicker-delimiter">
+        <span class="datepicker-delimiter-text">{% trans 'to' %}</span>
+    </span>
+    <div class="datepicker form-group">
+        {% with datepicker_input=form.end datepicker_label="To" %}
+        {% include 'project/reporting/_datepicker_reporting.html' %}
+        {% endwith %}
+    </div>
+    <button class="btn btn-primary" type="submit">{% trans "Submit" %}</button>
 </form>
 
 <div class="controls-container">
-  <div class="dropdown default-ranges">
-    <button class="dropbtn_views">{% trans "Period Range" %} </button>
-    <div class="dropdown-content-views">
-      <button id="Day">{%trans "Day View" %}</button>
-      <button id="Week">{% trans "Week View" %} </button>
-      <button id="Month">{% trans "Month View" %} </button>
-      <button id="Year">{% trans "Year View" %} </button>
+    <div class="dropdown default-ranges">
+        <button class="dropbtn">{% trans "Period Range" %}</button>
+        <div class="dropdown-content">
+            <button data-period="day" data-view="current">{% trans "Day View" %}</button>
+            <button data-period="week" data-view="current">{% trans "Week View" %}</button>
+            <button data-period="month" data-view="current">{% trans "Month View" %}</button>
+            <button data-period="year" data-view="current">{% trans "Year View" %}</button>
+        </div>
     </div>
-  </div>
-  <div class="dropdown preset-ranges">
-    <button class="dropbtn_preset">{% trans "Preset Ranges" %} </button>
-    <div class="dropdown-content-preset">
-      <button class="btn btn-primary" id="yesterday">{% trans "Yesterday" %} </button>
-      <button class="btn btn-primary" id="lastWeek">{% trans "Last Week" %} </button>
-      <button class="btn btn-primary" id="lastMonth">{% trans "Last Month" %} </button>
-      <button class="btn btn-primary" id="last3Months">{%trans "Last 3 Months" %} </button>
-      <button class="btn btn-primary" id="last6Months">{%trans "Last 6 Months" %} </button>
-      <button class="btn btn-primary" id="lastYear">{% trans "Last Year" %} </button>
+    <div class="dropdown preset-ranges">
+        <button class="dropbtn">{% trans "Preset Ranges" %}</button>
+        <div class="dropdown-content">
+            <button data-period="day" data-view="yesterday">{% trans "Yesterday" %}</button>
+            <button data-period="week" data-view="last">{% trans "Last Week" %}</button>
+            <button data-period="month" data-view="last">{% trans "Last Month" %}</button>
+            <button data-period="month" data-view="last" data-amount="3">{% trans "Last 3 Months" %}</button>
+            <button data-period="month" data-view="last" data-amount="6">{% trans "Last 6 Months" %}</button>
+            <button data-period="year" data-view="last">{% trans "Last Year" %}</button>
+        </div>
     </div>
-  </div>
-  <button class="arrow-btn" id="leftArrow"> &laquo; </button>
-  <button class="arrow-btn" id="rightArrow"> &raquo; </button>
+    <button class="arrow-btn" data-direction="prev">&laquo;</button>
+    <button class="arrow-btn" data-direction="next">&raquo;</button>
 </div>
 
-
 <style>
-  /* Align form and controls with the left edge of the graph */
-  .form-inline {
-    text-align: left;
-    margin-left: 0;
-    padding-left: 0;
-    margin: 0;
-    padding: 0;
-  }
+    .form-inline {
+        text-align: left;
+        margin: 0;
+        padding: 0;
+    }
 
-  .form-inline h4 {
-    text-align: left;
-    margin-left: 0;
-    padding-left: 0;
-    margin-top: 0;
-  }
+    .form-inline h4 {
+        text-align: left;
+        margin: 0 0 10px 0;
+    }
 
-  .form-inline .datepicker,
-  .form-inline .datepicker-delimiter,
-  .form-inline .btn {
-    margin-left: 0;
-    margin-right: 10px;
-  }
+    .form-inline .datepicker,
+    .form-inline .datepicker-delimiter,
+    .form-inline .btn {
+        margin: 0 10px 0 0;
+    }
 
-  .form-inline .datepicker:first-of-type {
-    margin-left: 0;
-    padding-left: 0;
-  }
+    .controls-container {
+        text-align: left;
+        margin: 10px 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
 
-  /* Align dropdown and navigation buttons to the left */
-  .controls-container {
-    text-align: left;
-    margin: 10px 0;
-    padding-left: 0;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
+    .dropbtn,
+    .arrow-btn {
+        background-color: #EEEEEE;
+        color: #6E6E6E;
+        padding: 5px 10px;
+        font-size: 16px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        cursor: pointer;
+    }
 
-  .dropdown,
-  .default-ranges,
-  .preset-ranges,
-  .arrow-btn {
-    margin: 0;
-  }
+    button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
 
-  button:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
+    .dropdown {
+        position: relative;
+        display: inline-block;
+    }
 
-  /* Dropdown menu */
-  .dropbtn,
-  .dropbtn_views,
-  .dropbtn_preset {
-    background-color: #EEEEEE;
-    color: #6E6E6E;
-    padding: 5px 10px;
-    font-size: 16px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    cursor: pointer;
-  }
+    .dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: #f1f1f1;
+        min-width: 160px;
+        box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+        z-index: 1;
+    }
 
-  .arrow-btn {
-    background-color: #EEEEEE;
-    color: #6E6E6E;
-    padding: 5px 10px;
-    font-size: 16px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    cursor: pointer;
-  }
+    .dropdown-content button {
+        color: black;
+        background-color: #f1f1f1;
+        border: none;
+        padding: 12px 16px;
+        display: block;
+        width: 100%;
+        text-align: left;
+        cursor: pointer;
+        margin: 0;
+        border-radius: 0;
+    }
 
+    .dropdown-content button:hover {
+        background-color: #ddd;
+    }
 
-
-  .dropdown,
-  .default-ranges,
-  .preset-ranges {
-    position: relative;
-    display: inline-block;
-  }
-
-  /* Dropdown Content (Hidden by Default) */
-  .dropdown-content,
-  .dropdown-content-views,
-  .dropdown-content-preset {
-    display: none;
-    position: absolute;
-    background-color: #f1f1f1;
-    min-width: 160px;
-    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
-    z-index: 1;
-  }
-
-  /* Buttons inside the dropdown */
-  .dropdown-content button,
-  .dropdown-content-views button,
-  .dropdown-content-preset button {
-    color: black;
-    background-color: #f1f1f1;
-    border: none;
-    padding: 12px 16px;
-    text-decoration: none;
-    display: block;
-    width: 100%;
-    text-align: left;
-    cursor: pointer;
-    margin: 0;
-    border-radius: 0;
-    box-sizing: border-box;
-  }
-
-  /* Change color of dropdown buttons on hover */
-  .dropdown-content button:hover,
-  .dropdown-content-views button:hover,
-  .dropdown-content-preset button:hover {
-    background-color: #ddd;
-  }
-
-  /* Show the dropdown menu on hover */
-  .default-ranges:hover .dropdown-content-views {
-    display: block;
-  }
-
-  .preset-ranges:hover .dropdown-content-preset {
-    display: block;
-  }
+    .dropdown:hover .dropdown-content {
+        display: block;
+    }
 </style>
 
-
-
-
 <script>
+    $(function () {
+        const $form = $('#{{ datepicker_id }}');
+        const $startInput = $('[name="{{ form.start.name }}"]');
+        const $endInput = $('[name="{{ form.end.name }}"]');
 
-  $(function () {
-    //use to reference form inputs
-    const $form = $('#{{ datepicker_id }}');
-    const $startInput = $('[name="{{ form.start.name }}"]');
-    const $endInput = $('[name="{{ form.end.name }}"]');
-    const currDate = new Date(); // current date
+        let lastClicked = sessionStorage.getItem('datepicker_lastClicked') || 'week';
 
-    // Get lastClicked from sessionStorage, default to 'week' if not set
-    var lastClicked = sessionStorage.getItem('datepicker_lastClicked') || 'week';
+        // Utility functions
+        const formatDate = (date) => {
+            return date.getFullYear() + '-' +
+                String(date.getMonth() + 1).padStart(2, '0') + '-' +
+                String(date.getDate()).padStart(2, '0');
+        };
 
-    // Format dates to avoid timezone issues
-    function formatDate(date) {
-      return date.getFullYear() + '-' +
-        String(date.getMonth() + 1).padStart(2, '0') + '-' +
-        String(date.getDate()).padStart(2, '0');
-    }
+        const disableButtons = () => {
+            $('.controls-container button').prop('disabled', true);
+        };
 
-    // Prevents user from clicking buttons while the form is submitting
-    function disableAllButtons() {
-      $('#leftArrow, #rightArrow, #Day, #Week, #Month, #Year, \
-        #yesterday, #lastWeek, #lastMonth, #last3Months, #last6Months, #lastYear').prop('disabled', true);
-    }
+        const submitForm = (startDate, endDate, periodType) => {
+            $startInput.val(formatDate(startDate));
+            $endInput.val(formatDate(endDate));
+            lastClicked = periodType;
+            sessionStorage.setItem('datepicker_lastClicked', lastClicked);
+            $form.submit();
+        };
 
-    //move time period back
-    $('#leftArrow').on('click', function () {
-      disableAllButtons();
+        // Date calculation functions
+        const dateCalculators = {
+            day: {
+                current: () => {
+                    const date = new Date();
+                    return { start: new Date(date), end: new Date(date) };
+                },
+                yesterday: () => {
+                    const date = new Date();
+                    date.setDate(date.getDate() - 1);
+                    return { start: new Date(date), end: new Date(date) };
+                }
+            },
+            week: {
+                current: () => {
+                    const start = new Date();
+                    start.setDate(start.getDate() - start.getDay() + 1);
+                    const end = new Date(start);
+                    end.setDate(start.getDate() + 6);
+                    return { start, end };
+                },
+                last: () => {
+                    const end = new Date();
+                    const start = new Date();
+                    start.setDate(start.getDate() - (start.getDay() + 6) % 7 - 7);
+                    end.setDate(start.getDate() + 6);
+                    return { start, end };
+                }
+            },
+            month: {
+                current: () => {
+                    const today = new Date();
+                    const start = new Date(today.getFullYear(), today.getMonth(), 1);
+                    const end = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+                    return { start, end };
+                },
+                last: (amount = 1) => {
+                    const end = new Date();
+                    end.setDate(0);
+                    const start = new Date();
+                    start.setMonth(end.getMonth() - (amount - 1), 1);
+                    return { start, end };
+                }
+            },
+            year: {
+                current: () => {
+                    const year = new Date().getFullYear();
+                    return {
+                        start: new Date(year, 0, 1),
+                        end: new Date(year, 11, 31)
+                    };
+                },
+                last: () => {
+                    const year = new Date().getFullYear() - 1;
+                    return {
+                        start: new Date(year, 0, 1),
+                        end: new Date(year, 11, 31)
+                    };
+                }
+            }
+        };
 
-      if ($startInput.val() && $endInput.val()) {
-        const startDate = new Date($startInput.val());
-        const endDate = new Date($endInput.val());
+        // Navigation functions
+        const navigate = (direction) => {
+            if (!$startInput.val() || !$endInput.val()) return;
 
-        if (lastClicked === 'day') {
-          startDate.setDate(startDate.getDate() - 1);
-          endDate.setDate(endDate.getDate() - 1);
-        }
+            const currentStart = new Date($startInput.val());
+            const currentEnd = new Date($endInput.val());
+            const multiplier = direction === 'next' ? 1 : -1;
 
-        else if (lastClicked === 'week') {
-          startDate.setDate(startDate.getDate() - 7);
-          endDate.setDate(endDate.getDate() - 7);
-        }
+            const navigators = {
+                day: () => {
+                    currentStart.setDate(currentStart.getDate() + multiplier);
+                    currentEnd.setDate(currentEnd.getDate() + multiplier);
+                },
+                week: () => {
+                    currentStart.setDate(currentStart.getDate() + (7 * multiplier));
+                    currentEnd.setDate(currentEnd.getDate() + (7 * multiplier));
+                },
+                month: () => {
+                    if (direction === 'next') {
+                        currentStart.setMonth(currentStart.getMonth() + 1, 1);
+                        currentEnd.setMonth(currentEnd.getMonth() + 2, 0);
+                    } else {
+                        currentStart.setMonth(currentStart.getMonth() - 1, 1);
+                        currentEnd.setMonth(currentEnd.getMonth(), 0);
+                    }
+                },
+                last3Month: () => {
+                    if (direction === 'next') {
+                        currentStart.setMonth(currentStart.getMonth() + 3, 1);
+                        currentEnd.setMonth(currentEnd.getMonth() + 4, 0);
+                    } else {
+                        currentStart.setMonth(currentStart.getMonth() - 3, 1);
+                        currentEnd.setMonth(currentEnd.getMonth() - 2, 0);
+                    }
+                },
+                last6Month: () => {
+                    if (direction === 'next') {
+                        currentStart.setMonth(currentStart.getMonth() + 6, 1);
+                        currentEnd.setMonth(currentEnd.getMonth() + 7, 0);
+                    } else {
+                        currentStart.setMonth(currentStart.getMonth() - 6, 1);
+                        currentEnd.setMonth(currentEnd.getMonth() - 5, 0);
+                    }
+                },
+                year: () => {
+                    currentStart.setFullYear(currentStart.getFullYear() + multiplier);
+                    currentEnd.setFullYear(currentEnd.getFullYear() + multiplier);
+                }
+            };
 
-        else if (lastClicked === 'month') {
-          startDate.setMonth(startDate.getMonth() - 1);
-          startDate.setDate(1);
-          endDate.setMonth(endDate.getMonth(), 0); //sets to last day of last month
-        }
+            if (navigators[lastClicked]) {
+                navigators[lastClicked]();
+                submitForm(currentStart, currentEnd, lastClicked);
+            }
+        };
 
-        else if (lastClicked === 'last3Month') {
-          startDate.setMonth(startDate.getMonth() - 3, 1);
-          endDate.setMonth(endDate.getMonth() - 2, 0); //sets to last day of the month three months ago
-        }
+        // Event handlers
+        $('.dropdown-content button[data-period]').on('click', function () {
+            disableButtons();
 
-        else if (lastClicked === 'last6Month') {
-          startDate.setMonth(startDate.getMonth() - 6, 1);
-          endDate.setMonth(endDate.getMonth() - 5, 0); //sets to last day of the month six months ago
-        }
+            const period = $(this).data('period');
+            const view = $(this).data('view');
+            const amount = $(this).data('amount') || 1;
 
-        else if (lastClicked === 'year') {
-          startDate.setFullYear(startDate.getFullYear() - 1);
-          endDate.setFullYear(endDate.getFullYear() - 1);
-        }
+            const { start, end } = dateCalculators[period][view](amount);
+            const periodType = amount > 1 ? `last${amount}Month` : period;
 
-        $startInput.val(formatDate(startDate));
-        $endInput.val(formatDate(endDate));
-      }
+            submitForm(start, end, periodType);
+        });
 
-      $form.submit();
+        $('.arrow-btn').on('click', function () {
+            disableButtons();
+            navigate($(this).data('direction'));
+        });
     });
-
-    //move time period forward
-    $('#rightArrow').on('click', function () {
-      disableAllButtons();
-
-      if ($startInput.val() && $endInput.val()) {
-        const startDate = new Date($startInput.val());
-        const endDate = new Date($endInput.val());
-
-        if (lastClicked === 'day') {
-          startDate.setDate(startDate.getDate() + 1);
-          endDate.setDate(endDate.getDate() + 1);
-        }
-
-        else if (lastClicked === 'week') {
-          startDate.setDate(startDate.getDate() + 7);
-          endDate.setDate(endDate.getDate() + 7);
-        }
-
-        else if (lastClicked === 'month') {
-          startDate.setMonth(startDate.getMonth() + 1, 1);
-          endDate.setMonth(endDate.getMonth() + 2, 0); //set to the last day of next month
-        }
-
-        else if (lastClicked === 'last3Month') {
-          startDate.setMonth(startDate.getMonth() + 3, 1);
-          endDate.setMonth(endDate.getMonth() + 4, 0); //sets to last day of the month three months later
-        }
-
-        else if (lastClicked === 'last6Month') {
-          startDate.setMonth(startDate.getMonth() + 6, 1);
-          endDate.setMonth(endDate.getMonth() + 7, 0); //sets to last day of the month six months later
-
-        }
-
-        else if (lastClicked === 'year') {
-          startDate.setFullYear(startDate.getFullYear() + 1);
-          endDate.setFullYear(endDate.getFullYear() + 1);
-        }
-
-        $startInput.val(formatDate(startDate));
-        $endInput.val(formatDate(endDate));
-      }
-
-      $form.submit();
-    });
-
-    //sets range to be the current day
-    $('#Day').on('click', function () {
-      disableAllButtons();
-      const startDate = new Date(currDate.getFullYear(), currDate.getMonth(), currDate.getDate()); // current day
-      const endDate = new Date(currDate.getFullYear(), currDate.getMonth(), currDate.getDate()); // current day
-
-      $startInput.val(formatDate(startDate));
-      $endInput.val(formatDate(endDate));
-
-      lastClicked = 'day';
-      sessionStorage.setItem('datepicker_lastClicked', lastClicked);
-      $form.submit();
-    });
-
-    //sets range to be the current week
-    $('#Week').on('click', function () {
-      disableAllButtons();
-
-      const startDate = new Date();
-      startDate.setDate(currDate.getDate() - (currDate.getDay()) + 1); // first day of the week (set to monday with +1)
-      const endDate = new Date();
-      endDate.setDate(startDate.getDate() + 6); // end of the current week (saturday)
-
-      $startInput.val(formatDate(startDate));
-      $endInput.val(formatDate(endDate));
-
-      lastClicked = 'week';
-      sessionStorage.setItem('datepicker_lastClicked', lastClicked);
-      $form.submit();
-
-    });
-
-    //sets range to be this month
-    $('#Month').on('click', function () {
-      disableAllButtons();
-
-      const startDate = new Date();
-      startDate.setFullYear(currDate.getFullYear(), currDate.getMonth(), 1); // first day of the month
-
-      const endDate = new Date();
-      endDate.setFullYear(currDate.getFullYear(), currDate.getMonth() + 1, 0); // last day of the month
-
-      $startInput.val(formatDate(startDate));
-      $endInput.val(formatDate(endDate));
-
-      lastClicked = 'month';
-      sessionStorage.setItem('datepicker_lastClicked', lastClicked);
-      $form.submit();
-    });
-
-    //sets range to be the current year
-    $('#Year').on('click', function () {
-      disableAllButtons();
-
-      const startDate = new Date(currDate.getFullYear(), 0, 1); // start of the current year
-      const endDate = new Date(currDate.getFullYear(), 11, 31); //end of the current year
-
-      $startInput.val(formatDate(startDate));
-      $endInput.val(formatDate(endDate));
-
-      lastClicked = 'year';
-      sessionStorage.setItem('datepicker_lastClicked', lastClicked);
-      $form.submit();
-
-    });
-
-    //sets range to be yesterday
-    $('#yesterday').on('click', function () {
-      disableAllButtons();
-
-      const startDate = new Date(currDate.getFullYear(), currDate.getMonth(), currDate.getDate() - 1); // yesterday
-      const endDate = new Date(currDate.getFullYear(), currDate.getMonth(), currDate.getDate() - 1); // yesterday
-
-      $startInput.val(formatDate(startDate));
-      $endInput.val(formatDate(endDate));
-
-      lastClicked = 'day';
-      sessionStorage.setItem('datepicker_lastClicked', lastClicked);
-      $form.submit();
-
-    });
-
-    //sets range to be the last week
-    $('#lastWeek').on('click', function () {
-      disableAllButtons();
-
-      const endDate = new Date(); // current date
-      const startDate = new Date();
-
-      startDate.setDate((startDate.getDate() - (startDate.getDay() + 6) % 7) - 7); //logic to get last monday
-      endDate.setDate(startDate.getDate() + 6); // last day of the previous week (sunday)
-
-      $startInput.val(formatDate(startDate));
-      $endInput.val(formatDate(endDate));
-
-      lastClicked = 'week';
-      sessionStorage.setItem('datepicker_lastClicked', lastClicked);
-      $form.submit();
-
-    });
-
-    //sets range to be the last month
-    $('#lastMonth').on('click', function () {
-      disableAllButtons();
-
-      const endDate = new Date(); // current date
-      endDate.setDate(0); // last day of the previous month
-
-      const startDate = new Date();
-      startDate.setMonth(endDate.getMonth(), 1); // first day of the previous month
-      //startDate.setDate(1); // first day of the month
-
-      $startInput.val(formatDate(startDate));
-      $endInput.val(formatDate(endDate));
-
-      lastClicked = 'month';
-      sessionStorage.setItem('datepicker_lastClicked', lastClicked);
-      $form.submit();
-    });
-
-    //sets range to be the last 3 months
-    $('#last3Months').on('click', function () {
-      disableAllButtons();
-
-      const endDate = new Date(); // current date
-      endDate.setDate(0); // last day of the previous month
-
-      const startDate = new Date();
-      startDate.setMonth(endDate.getMonth() - 2, 1); // first day of the month three months ago
-
-      $startInput.val(formatDate(startDate));
-      $endInput.val(formatDate(endDate));
-
-      lastClicked = 'last3Month';
-      sessionStorage.setItem('datepicker_lastClicked', lastClicked);
-      $form.submit();
-    });
-
-    //sets range to be the last 6 months
-    $('#last6Months').on('click', function () {
-      disableAllButtons();
-
-      const endDate = new Date(); // current date
-      endDate.setDate(0); // last day of the previous month
-
-      const startDate = new Date();
-      startDate.setMonth(endDate.getMonth() - 5, 1); // first day of the month six months ago
-
-      $startInput.val(formatDate(startDate));
-      $endInput.val(formatDate(endDate));
-
-      lastClicked = 'last6Month';
-      sessionStorage.setItem('datepicker_lastClicked', lastClicked);
-      $form.submit();
-    });
-
-    //sets range to be last year
-    $('#lastYear').on('click', function () {
-      disableAllButtons();
-
-      const endDate = new Date(); // current date
-      endDate.setFullYear(endDate.getFullYear() - 1, 11, 31); // last day of the previous year
-
-      const startDate = new Date();
-      startDate.setFullYear(endDate.getFullYear(), 0, 1); // first day of the previous year
-
-      $startInput.val(formatDate(startDate));
-      $endInput.val(formatDate(endDate));
-
-      lastClicked = 'year';
-      sessionStorage.setItem('datepicker_lastClicked', lastClicked);
-      $form.submit();
-    });
-  });
-
-
 </script>

@@ -188,7 +188,7 @@
             if (dataItem) dataItem.enabled = true; // Enable the data point
         } 
         else {
-            if (totalEnabled < 2) return; // Prevent disabling the last slice
+            if (totalEnabled < 2) return; // Prevent disabling of the last slice
             rect.attr('class', 'disabled');
             if (dataItem) dataItem.enabled = false; 
         }
@@ -202,9 +202,9 @@
         path.style("pointer-events", "none");
 
         // Update the path 'd' attribute with a transition
-        arcs.select("path") // Select the path within each slice group
+        arcs.select("path")
             .transition()
-            .duration(750) // Animation duration
+            .duration(750) 
             .attrTween('d', function (d) {
                 var interpolate = d3.interpolate(this._current, d);
                 this._current = interpolate(0); // Update _current for next transition
