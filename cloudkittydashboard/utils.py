@@ -33,3 +33,7 @@ def formatRate(rate: float, prefix: str, postfix: str) -> str:
     if postfix:
         rate = rate + postfix
     return rate
+
+
+def formatTitle(word):
+    return word.title().replace('_', ' ').replace('Id', 'ID')
